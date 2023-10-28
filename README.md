@@ -41,3 +41,25 @@ export default function InvoiceStatus({ status }: { status: string }) {
 ```
 
 ## Optimizing fonts & images
+
+### Fonts
+
+A Cumulative Layout Shift egy olyan mérőszám, amelyet a Google egy weboldal teljesítményének és felhasználói élményének értékelésére használ. A betűtípusok esetében az elrendezéseltolódás akkor következik be, amikor a böngésző a szöveget kezdetben egy tartalék- vagy rendszerbetűtípussal jeleníti meg, majd a betöltés után egy egyéni betűtípusra cseréli azt. Ez a csere a szöveg méretének, távolságának vagy elrendezésének megváltozását okozhatja, ami az elemek eltolódását eredményezi.
+
+A `next.js` automatikusan optimalizálja a betűtípusokat az alkalmazásban, ha a `next/font` modult használja. Ezt úgy teszi, hogy a betűtípusfájlokat a build-kor letölti, és a többi statikus eszközzel együtt tárolja őket. Ez azt jelenti, hogy amikor egy felhasználó meglátogatja az alkalmazást, nem történik további hálózati kérés a betűtípusok iránt, ami hatással lenne a teljesítményre.
+
+A `ui` könyvtárban létrehozott `fonts` fájlba importáljuk a kívánt betűtípusokat a `next/font/google` könyvtárból. Ezután hozzunk létre és exportáljuk ki változóba az adott betűtípust, megadva neki a `subset` alatt néhány alapbeállítást.
+
+```ts
+import { Inter, Lusitana } from "next/font/google";
+
+export const inter = Inter({ subsets: ["latin"] });
+export const lusitana = Lusitana({
+  subsets: ["latin"],
+  weight: ["400", "700"]
+});
+```
+
+Ezután az adott fájlba importálja (`page`, `layout`, komponens stb.) hozzá tudjuk adni az adott elem `className`-éhez az alábbi szerint: 
+`<body className={`${inter.className} antialiased`}>{children}</body>`.
+(Itt a Tailwind `antialased` osztályt is hozzáadod, amely kisimítja a betűtípust. Nem szükséges használni ezt az osztályt, de szépen kiemeli a betűtípusokat.)
