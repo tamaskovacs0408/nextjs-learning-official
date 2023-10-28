@@ -2,11 +2,11 @@
 
 ## Struktúra
 
--`/app`: Tartalmazza az összes route-ot, komponenst és logikát az alkalmazáshoz
--`/app/lib`: Tartalmazza az alkalmazásban használt függvényeket, például újrafelhasználható utility függvényeket és data fetching függvényeket
--`/app/ui`: Tartalmazza az alkalmazás összes UI komponensét, például cards, táblázatokat és forms
--`/public`: Tartalmazza az alkalmazás statikus eszközeit, például a képeket
--`/scripts`: Tartalmaz egy fájlt, amelyet az adatbázis feltöltéséhez használsz
+- `/app`: Tartalmazza az összes route-ot, komponenst és logikát az alkalmazáshoz
+- `/app/lib`: Tartalmazza az alkalmazásban használt függvényeket, például újrafelhasználható utility függvényeket és data fetching függvényeket
+- `/app/ui`: Tartalmazza az alkalmazás összes UI komponensét, például cards, táblázatokat és forms
+- `/public`: Tartalmazza az alkalmazás statikus eszközeit, például a képeket
+- `/scripts`: Tartalmaz egy fájlt, amelyet az adatbázis feltöltéséhez használsz
 
 ## Styling
 
@@ -63,3 +63,21 @@ export const lusitana = Lusitana({
 Ezután az adott fájlba importálja (`page`, `layout`, komponens stb.) hozzá tudjuk adni az adott elem `className`-éhez az alábbi szerint: 
 `<body className={`${inter.className} antialiased`}>{children}</body>`.
 (Itt a Tailwind `antialased` osztályt is hozzáadod, amely kisimítja a betűtípust. Nem szükséges használni ezt az osztályt, de szépen kiemeli a betűtípusokat.)
+
+### Images
+
+A Next.js képes statikus eszközök, például képek kiszolgálására a legfelső szintű `/public` mappa alatt. A `/public` mappán belüli fájlokra az alkalmazásban lehet hivatkozni.
+
+A `next/image` kompnens használatával automatikusan optimalizálhatjuk a képeket.
+
+#### Image component
+
+A `<Image>` komponens a HTML `<img>` tag kiterjesztése, és automatikus képoptimalizálással rendelkezik, például:
+
+- A képek betöltésekor automatikusan megakadályozza az elrendezés eltolódását.
+- A képek átméretezése a nagyméretű képek kisebb viewport-al rendelkező eszközökre.
+- A képek alapértelmezett `lazy loading`-ja (a képek akkor töltődnek be, amikor a viewport-ba kerülnek).
+- Képek kiszolgálása modern formátumokban, például `WebP` és `AVIF` formátumban, ha a böngésző támogatja.
+
+Érdemes a képek szélességét és magasságát beállítani, hogy elkerüljük az elrendezés eltolódását, ezeknek a képarányoknak azonosnak kell lenniük a forrásképpel.
+Észre fogod venni a `hidden` osztályt is, hogy eltávolítsd a képet a DOM-ból a mobil képernyőkön, és az `md:block` osztályt, hogy megjelenítsd a képet az asztali képernyőkön(Tailwind).
