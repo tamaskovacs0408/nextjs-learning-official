@@ -96,3 +96,29 @@ Nested route-ok létrehozásához egymásba ágyazott mappákat készíthetsz, s
 
 ## Layout
 
+A Next.js-ben egy speciális `layout.tsx` fájlt használhatsz a több oldal között megosztott felhasználói felület létrehozásához.
+
+A `Layout` komponens megkapja a Children propot. A `children` lehet egy oldal vagy egy másik layout. Ebben az esetében a `/dashboardon` belüli oldalak automatikusan egy Layouton belül lesznek beágyazva.
+
+```tsx
+import SideNav from "@/app/ui/dashboard/sidenav";
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
+      <div className="w-full flex-none md:w-64">
+        <SideNav />
+      </div>
+      <div className="flex-grow p-6 md:overflow-y-auto md:p-12">{children}</div>
+    </div>
+  );
+}
+```
+
+A layout használatának egyik előnye, hogy a navigáció során csak az oldalkomponensek frissülnek, míg a layout nem kerül újrarendezésre. A Next.js-ben ezt *részleges renderelésnek* (`partial rendering`) nevezik.
+
+### Root layout
+
+Az `/app` mappában található `layout.tsx`-et nevezzük **root layout**-nak. Ez egy kötelező elem! A root layout-hoz hozzáadott UI az alkalmazás minden oldalán közös lesz. A root layoutot használhatja a `<html>` és `<body>` címkék módosítására, valamint metaadatok hozzáadására.
+
+## Navigating between pages
