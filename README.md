@@ -81,3 +81,18 @@ A `<Image>` komponens a HTML `<img>` tag kiterjesztése, és automatikus képopt
 
 Érdemes a képek szélességét és magasságát beállítani, hogy elkerüljük az elrendezés eltolódását, ezeknek a képarányoknak azonosnak kell lenniük a forrásképpel.
 Észre fogod venni a `hidden` osztályt is, hogy eltávolítsd a képet a DOM-ból a mobil képernyőkön, és az `md:block` osztályt, hogy megjelenítsd a képet az asztali képernyőkön(Tailwind).
+
+## Routes
+
+Úgy tudunk új route-ot létrehozni, hogy az `app` mappán belül létrehozunk egy új mappát a kívánt route nevével, aminek tartalmaznia kell egy `pages.tsx` fájlt (pl. `/app/dasboard/pages.tsx`). Ez után már elérhető lesz a megadott (dashboard) oldal az urlben (`www.mypage.com/dashboard`). Az `app` könyvtárba más mappákat is elhelyezhetünk (`lib`, `ui` stb.), mivel a Next.js csak azt fogja route-nak venni, ahol van `pages.tsx` fájl.
+
+### Nested routing
+
+A Next.js file-system routinget használ, ahol a mappákat egymásba ágyazott route-ok létrehozására használják. Minden mappa egy routeszegmenst képvisel, amely egy URL-szegmenshez kapcsolódik.
+
+A `page.tsx` egy speciális Next.js fájl, amely egy React komponenst exportál, amely az route felhasználói felületét tartalmazza. Az alkalmazásodban már van egy page fájl: `/app/page.tsx` - ez a kezdőlap, amely a `/` routehoz kapcsolódik.
+
+Nested route-ok létrehozásához egymásba ágyazott mappákat készíthetsz, saját `page.tsx` fájlokkal.
+
+## Layout
+
