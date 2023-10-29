@@ -24,7 +24,7 @@ A `clsx` library arra való, hogy conditional styles-t tudjunk írni (pl tailwin
 
 ```tsx
 import clsx from 'clsx';
- 
+
 export default function InvoiceStatus({ status }: { status: string }) {
   return (
     <span
@@ -56,11 +56,11 @@ import { Inter, Lusitana } from "next/font/google";
 export const inter = Inter({ subsets: ["latin"] });
 export const lusitana = Lusitana({
   subsets: ["latin"],
-  weight: ["400", "700"]
+  weight: ["400", "700"],
 });
 ```
 
-Ezután az adott fájlba importálja (`page`, `layout`, komponens stb.) hozzá tudjuk adni az adott elem `className`-éhez az alábbi szerint: 
+Ezután az adott fájlba importálja (`page`, `layout`, komponens stb.) hozzá tudjuk adni az adott elem `className`-éhez az alábbi szerint:
 `<body className={`${inter.className} antialiased`}>{children}</body>`.
 (Itt a Tailwind `antialased` osztályt is hozzáadod, amely kisimítja a betűtípust. Nem szükséges használni ezt az osztályt, de szépen kiemeli a betűtípusokat.)
 
@@ -115,10 +115,49 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 }
 ```
 
-A layout használatának egyik előnye, hogy a navigáció során csak az oldalkomponensek frissülnek, míg a layout nem kerül újrarendezésre. A Next.js-ben ezt *részleges renderelésnek* (`partial rendering`) nevezik.
+A layout használatának egyik előnye, hogy a navigáció során csak az oldalkomponensek frissülnek, míg a layout nem kerül újrarendezésre. A Next.js-ben ezt _részleges renderelésnek_ (`partial rendering`) nevezik.
 
 ### Root layout
 
 Az `/app` mappában található `layout.tsx`-et nevezzük **root layout**-nak. Ez egy kötelező elem! A root layout-hoz hozzáadott UI az alkalmazás minden oldalán közös lesz. A root layoutot használhatja a `<html>` és `<body>` címkék módosítására, valamint metaadatok hozzáadására.
 
 ## Navigating between pages
+
+### <Link> component
+
+A Next.js-ben a `Link` komponens segítségével az alkalmazás oldalai között linkeket hozhat létre. A `<Link>` lehetővé teszi a kliensoldali navigációt JavaScript segítségével. Bár az alkalmazás egyes részei a szerveren kerülnek renderelésre, a navigáció gyorsabb, és nincs teljes oldalfrissítés - így sokkal inkább webes alkalmazásnak tűnik.
+
+A `<Link>` komponens a `<a>`-hoz hasonlóan egy `href`-be várja az route-ot.
+
+`<Link href="/dashboard">Dashboard</Link>`
+
+### Aktív oldal
+
+Egy gyakori felhasználói felület mintája, hogy egy aktív linket jelenít meg, amely jelzi a felhasználónak, hogy éppen melyik oldalon tartózkodik. Ehhez az URL-ből meg kell szereznie a felhasználó aktuális elérési útvonalát. A Next.js biztosít egy `usePathName()` nevű hook-ot, amelyet a route ellenőrzésére használhatunk.
+
+Mivel a `usePathName()` egy hook, a `nav-links.tsx`-et egy klienskomponenssé kell alakítanod. Adja hozzá a React `"use client"` direktíváját a fájl tetejéhez, majd importálja a `usePathName()` funkciót a `next/navigation`-ból, majd rendeljük hozzá egy változóhoz (`pathname`).
+
+`const pathname = usePathName();`
+
+Ez után a már elmlített `clsx` könyvtárral tudunk conditional style-t beállítani (Tailwind) az aktív linkre.
+
+```tsx
+<Link
+  key={link.name}
+  href={link.href}
+  className={clsx(
+    "flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3",
+    {
+      "bg-sky-100 text-blue-600": pathname === link.href,
+    }
+  )}
+>
+  <LinkIcon className="w-6" />
+  <p className="hidden md:block">{link.name}</p>
+</Link>
+```
+A kliensoldali navigáció mellett a Next.js automatikusan kóddal osztja fel az alkalmazást routeszegmensek szerint. Ez eltér a hagyományos SPA-tól, ahol a böngésző az alkalmazás teljes kódját betölti a kezdeti betöltéskor.
+
+A kód route-ok szerinti felosztása azt jelenti, hogy az oldalak elszigeteltek lesznek. Ha egy bizonyos oldal hibát dob, az alkalmazás többi része továbbra is működik.
+
+Továbbá, a production-ben, amikor `<Link>` komponensek jelennek meg a böngésző nézetablakában, a Next.js automatikusan előhívja a háttérben a linkelt route kódját. Mire a felhasználó rákattint a linkre, a céloldal kódja már betöltődik a háttérben, és az oldalváltás szinte azonnal megtörténik!
