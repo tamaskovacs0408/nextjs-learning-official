@@ -220,3 +220,28 @@ WHERE invoices.amount = 666;
 ```
 
 ## Fetching data
+
+### API Layer
+
+Az API-k egy közvetítő layert jelentenek az alkalmazáskód és az adatbázis között. Van néhány olyan eset, amikor API-t használhat:
+
+- Ha olyan 3rd party szolgáltatásokat használ, amelyek API-t biztosítanak.
+- Ha adatokat hív le a kliens oldalról, akkor olyan API-layert szeretne, amely a kiszolgálón fut, hogy elkerülje az adatbázis titkainak felfedését az kliens számára.
+A Next.js-ben API végpontokat hozhat létre Route Handlerek segítségével.
+
+### Database queries
+
+Amikor egy fullstack alkalmazást készítünk, logikát is kell írni az adatbázissal való interakcióhoz. Az olyan relációs adatbázisok esetében, mint a `Postgres`, ezt megtehetjük `SQL` vagy egy `ORM`, mint a `Prisma` segítségével.
+
+Van néhány olyan eset, amikor adatbázis-lekérdezéseket kell írni:
+
+- Az API végpontok létrehozásakor logikát kell írni az adatbázissal való interakcióhoz.
+- Ha `React Server Components`-t használsz (adatok lekérése a szerveren), akkor kihagyhatod az API réteget, és közvetlenül lekérdezheted az adatbázisodat anélkül, hogy kockáztatnád az adatbázisod titkainak felfedését az ügyfél előtt. (`'use server`)
+
+### Using Server Components to fetch data
+
+Alapértelmezés szerint a Next.js alkalmazások `React Server Components`-t használnak, és szükség esetén választhatjuk a `Client Components`-t(`'use client`). Az adatok `React Server Components` segítségével történő lekérdezésének van néhány előnye:
+
+- A `React Server Components` a serveren hajtódnak végre, így a drága adatlehívásokat és logikát a serveren tarthatja, és csak az eredményt küldheti el az ügyfélnek.
+- A `React Server Components` támogatják az `promise`-okat, így egyszerűbb megoldást nyújtanak az olyan `async` feladatokhoz, mint az `data fetching`. Használhatja az `async/await` szintaxist anélkül, hogy `useEffect`, `useState` vagy 3rd party data fetching library-hoz kellene nyúlnia.
+Mivel a `React Server Components` a kiszolgálón hajtódnak végre, közvetlenül lekérdezheti az adatbázist további API-réteg nélkül.
