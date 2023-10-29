@@ -236,7 +236,7 @@ Amikor egy fullstack alkalmazást készítünk, logikát is kell írni az adatb�
 Van néhány olyan eset, amikor adatbázis-lekérdezéseket kell írni:
 
 - Az API végpontok létrehozásakor logikát kell írni az adatbázissal való interakcióhoz.
-- Ha `React Server Components`-t használsz (adatok lekérése a szerveren), akkor kihagyhatod az API réteget, és közvetlenül lekérdezheted az adatbázisodat anélkül, hogy kockáztatnád az adatbázisod titkainak felfedését az ügyfél előtt. (`'use server`)
+- Ha `React Server Components`-t használsz (adatok lekérése a szerveren), akkor kihagyhatod az API réteget, és közvetlenül lekérdezheted az adatbázisodat anélkül, hogy kockáztatnád az adatbázisod titkainak felfedését az ügyfél előtt.
 
 ### Using Server Components to fetch data
 
@@ -245,3 +245,80 @@ Alapértelmezés szerint a Next.js alkalmazások `React Server Components`-t has
 - A `React Server Components` a serveren hajtódnak végre, így a drága adatlehívásokat és logikát a serveren tarthatja, és csak az eredményt küldheti el az ügyfélnek.
 - A `React Server Components` támogatják az `promise`-okat, így egyszerűbb megoldást nyújtanak az olyan `async` feladatokhoz, mint az `data fetching`. Használhatja az `async/await` szintaxist anélkül, hogy `useEffect`, `useState` vagy 3rd party data fetching library-hoz kellene nyúlnia.
 Mivel a `React Server Components` a kiszolgálón hajtódnak végre, közvetlenül lekérdezheti az adatbázist további API-réteg nélkül.
+
+### Using SQL
+
+Ehhez a projecthez adatbázis query-ket fogunk írni az adatlekérésekhez. 
+
+Van néhány ok, amiért SQL-t fogunk használni:
+
+- Az SQL a relációs adatbázisok lekérdezésének ipari szabványa (pl. az ORM-ek SQL-t generálnak a under the hood).
+- Az SQL alapszintű ismerete segíthet megérteni a relációs adatbázisok alapjait.
+- Az SQL sokoldalú, lehetővé teszi, hogy konkrét adatokat kérjen le és manipuláljon.
+- A Vercel Postgress SDK használata védelmet nyújt az `SQL-injection` ellen.
+
+A `sql` függvénnyel tudunk lekérdezéseket végrehajtani az adatbázison (`import { sql } from '@vercel/postgres';`). Az `sql` függvényt bármelyik `Server Component`-ben meg lehet hívni. A könnyebben a komponensekben való könnyebb navigálás érdekében, az összes adatlekérdezést a `data.ts` fájlban történik, innen importálhatjuk őket a komponensekbe.
+
+
+Figyeljünk oda arra:
+
+- Az adatkérések véletlenül blokkolják egymást, és így egy `request waterfall` jön létre.
+- Alapértelmezés szerint a Next.js a teljesítmény javítása érdekében előrendezi (prerenders) az útvonalakat, ezt nevezzük statikus renderelésnek(Static Rendering). Tehát ha az adatok megváltoznak, az nem fog megjelenni a dashboardon.
+
+#### Request waterfall
+
+A "waterfall" a hálózati kérések olyan sorozatára utal, amely az előző kérések teljesítésétől függ. Az adatlekérdezés esetében minden egyes kérés csak akkor kezdődhet el, ha az előző kérés visszaadta az adatokat. Például meg kell várnunk a `fetchRevenue()` végrehajtását, mielőtt a `fetchLatestInvoices()` elindulhat, és így tovább.
+
+```tsx
+const revenue = await fetchRevenue();
+const latestInvoices = await fetchLatestInvoices(); // wait for fetchRevenue() to finish
+const {
+  numberOfInvoices,
+  numberOfCustomers,
+  totalPaidInvoices,
+  totalPendingInvoices,
+} = await fetchCardData(); // wait for fetchLatestInvoices() to finish
+```
+
+Ez a minta nem feltétlenül rossz. Előfordulhatnak olyan esetek, amikor `watrerfall`-t akarsz, mert azt szeretnéd, hogy egy feltétel teljesüljön a következő kérés előtt. Például először a felhasználó azonosítóját és profilinformációit szeretné lekérdezni. Ha már megvan az azonosító, akkor a barátok listáját is lekérdezhetjük. Ebben az esetben minden egyes kérés az előző kérésből visszakapott adatoktól függ.
+
+Ez a viselkedés azonban nem szándékos is lehet, és hatással lehet a teljesítményre.
+
+#### Parallel data fetching
+
+A `waterfall` elkerülésének gyakori módja, hogy az összes adatkérést egyszerre - párhuzamosan - kezdeményezzük.
+
+JavaScriptben a `Promise.all()` vagy `Promise.allSettled()` függvények segítségével az összes promiset egyszerre kezdeményezheti. 
+Például a `data.ts`-ben a `Promise.all()` függvényt használjuk a `fetchCardData()` függvényben.
+
+```ts
+export async function fetchCardData() {
+  try {
+    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
+    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
+    const invoiceStatusPromise = sql`SELECT
+         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
+         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
+         FROM invoices`;
+ 
+    const data = await Promise.all([
+      invoiceCountPromise,
+      customerCountPromise,
+      invoiceStatusPromise,
+    ]);
+    // ...
+  }
+}
+```
+
+**JÓ TUDNI**
+
+A `Promise.allSettled()` függvénnyel a `status`- és `value` key-t tartalmazó objektumok tömbjét is visszaadhatja, így ellenőrizheti, hogy egy promise státusza teljesült vagy elutasított, mielőtt az értéket átadja a komponensnek. Ez akkor hasznos, ha a hibákat kecsesebben akarja kezelni.
+
+Ezt a mintát használva:
+
+- Az összes adatlekérdezés végrehajtását egyszerre kezdheti el, ami teljesítménynövekedést eredményezhet.
+- Használjon egy natív JavaScript mintát, amely bármilyen könyvtárra vagy keretrendszerre alkalmazható.
+Azonban... van egy hátránya ennek a JavaScript-mintának: mi történik, ha egy adatkérés lassabb, mint az összes többi?
+
+## Dynamic Rendering
