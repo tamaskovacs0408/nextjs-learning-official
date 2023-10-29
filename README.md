@@ -161,3 +161,62 @@ A kliensoldali navigáció mellett a Next.js automatikusan kóddal osztja fel az
 A kód route-ok szerinti felosztása azt jelenti, hogy az oldalak elszigeteltek lesznek. Ha egy bizonyos oldal hibát dob, az alkalmazás többi része továbbra is működik.
 
 Továbbá, a production-ben, amikor `<Link>` komponensek jelennek meg a böngésző nézetablakában, a Next.js automatikusan előhívja a háttérben a linkelt route kódját. Mire a felhasználó rákattint a linkre, a céloldal kódja már betöltődik a háttérben, és az oldalváltás szinte azonnal megtörténik!
+
+## Create Database
+
+A Vercel Dashboard *Storage* tab-on hozzunk létre egy `Postgres` adatbázist. Adjunk nevet és válasszuk ki a régiót (itt előszőr a project settings/functions rész alatt állítsunk be európai (Párizs/Frankfurt) régiót, hogy az adatbázisnál is ezt tudjuk választani).
+
+Ha létrehoztuk a Postgres adatbázist, az `.env.local` tabon látható adatokat másoljuk a projectünk `.env` fájljába (ha nincs ilyen, hozzunk létre). **NAGYON FONTOS, HOGY A .gitingore FÁJLBAN MEG LEGYEN ADVA A .env FÁJLOK KISZŰRÉSE!!!**
+
+Végül futtassuk az `npm i @vercel/postgres` parancsot a terminálban a Vercel Postgres SDK telepítéséhez.
+
+### Seed database
+
+Most, hogy létrehoztuk az adatbázist, töltsük meg néhány kezdeti adattal. Ez lehetővé teszi, hogy legyen néhány adatunk, amivel dolgozhatunk a dashboard létrehozásakor.
+
+A `/scripts` mappában van egy `seed.js` nevű fájl. Ez a script tartalmazza a invoices, customers, users és revenue táblák létrehozására és seedingre vonatkozó utasításokat.
+
+A script SQL-t használ a táblák létrehozásához, és a `placeholder-data.js` fájlból származó adatokkal tölti fel őket, miután létrehozta őket.
+
+Ezután a `package.json` fájlban a következő sorral egészítse ki a `scripts` részt:
+
+```js
+"scripts": {
+  "build": "next build",
+  "dev": "next dev",
+  "start": "next start",
+  "seed": "node -r dotenv/config ./scripts/seed.js"
+},
+```
+
+Ez a parancs fogja végrehajtani a `seed.js`-t. Mielőtt futtathatnánk a parancsot, telepítsük a *bcrypt* könyvtárat (`npm i bcrypt`), amely a felhasználói jelszavak hashelésére szolgál.
+
+Most futtassuk az `npm run seed`-et. Látnod kell néhány `console.log` üzenetet a terminálodban, hogy tudd, a script fut.
+
+```js
+Created "users" table
+Seeded 1 users
+Created "customers" table
+Seeded 10 customers
+Created "invoices" table
+Seeded 15 invoices
+Created "revenue" table
+Seeded 12 revenue
+```
+
+Ezek után a vercel oldalán lévő Storage tabomn a Data fülre kattintva már kiválaszthatjuk és láthatjuk az előbb betöltött adatokat az adatbázisból
+
+### Query-k futtatása
+
+A *query* fülre váltással interakcióba léphetünk az adatbázisával. Ez a rész támogatja a szabványos SQL parancsokat. Például a `DROP TABLE customers` beírása törli a `"customers"` táblát az összes adatával együtt - **ezért légy óvatos**!
+
+Futtassuk az első adatbázis-lekérdezését: Illesszük be és futtassa az alábbi SQL kódot a Vercel query felületén:
+
+```sql
+SELECT invoices.amount, customers.name
+FROM invoices
+JOIN customers ON invoices.customer_id = customers.id
+WHERE invoices.amount = 666;
+```
+
+## Fetching data
