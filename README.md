@@ -1,5 +1,11 @@
 # Next.js App Router Course - Final
 
+## Installation & runnding development server
+
+`npx create-next-app@latest`
+
+`npm run dev --turbo` - Turbopack dev server, gyorsabb! (még nem teljesen stabil)
+
 ## Struktúra
 
 - `/app`: Tartalmazza az összes route-ot, komponenst és logikát az alkalmazáshoz
@@ -322,3 +328,31 @@ Ezt a mintát használva:
 Azonban... van egy hátránya ennek a JavaScript-mintának: mi történik, ha egy adatkérés lassabb, mint az összes többi?
 
 ## Dynamic Rendering
+
+### Static Rendering
+
+Statikus renderelés esetén az adatok lekérése és renderelése a szerveren történik build time (deploy) vagy a revalidation során. Az revalidation az adatcache törlése és a legfrissebb adatok újbóli lekérése. Ez akkor hasznos, ha az adatok változnak, és biztosítani szeretné, hogy a legfrissebb adatokat jelenítse meg. Az eredményt ezután szét lehet osztani és gyorsítótárba helyezni (tárolni) egy tartalomszolgáltató hálózaton (CDN).
+
+Amikor egy felhasználó meglátogatja az alkalmazást, a gyorsítótárban tárolt eredmény kerül kiszolgálásra. A statikus megjelenítésnek van néhány előnye:
+
+- **Gyorsabb webhelyek** - Az előzetesen renderelt tartalom gyorsítótárba helyezhető. Ez biztosítja, hogy a felhasználók világszerte gyorsabban és megbízhatóbban elérhetik webhelye tartalmát.
+- **Csökkentett szerverterhelés** - Mivel a tartalom gyorsítótárazva van, a szervernek nem kell dinamikusan létrehoznia a tartalmat minden egyes felhasználói kérésre.
+- **SEO** - Az előzetesen renderelt tartalom könnyebben indexelhető a keresőmotorok számára, mivel a tartalom már az oldal betöltésekor rendelkezésre áll. Ez jobb rangsorolást eredményezhet.
+A **statikus renderelés akkor hasznos**, ha **a UI nem rendelkezik adatokkal**, vagy **olyan adatokkal, amelyeket megosztanak a felhasználók között**, mint például egy **statikus blogbejegyzés vagy egy termékoldal**. De nem biztos, hogy jó választás egy olyan dashboardhoz, amely rendszeresen frissülő adatokkal rendelkezik.
+
+### Dynamic Rendering
+
+A dinamikus rendereléssel a tartalom minden egyes felhasználó számára a szerveren kerül megjelenítésre a kérés időpontjában (amikor a felhasználó meglátogatja az oldalt). A dinamikus renderelésnek több előnye is van:
+
+- **Valós idejű adatok** - A dinamikus renderelés lehetővé teszi, hogy az alkalmazás valós idejű vagy gyakran frissített adatokat jelenítsen meg. Ez ideális olyan alkalmazásokhoz, ahol az adatok gyakran változnak.
+- **Felhasználó-specifikus tartalom** - A dinamikus rendereléssel könnyebb a felhasználó-specifikus tartalmak, például a személyre szabott dashboardok vagy felhasználói profilok kiszolgálása, mivel az adatok a felhasználói interakció alapján frissülnek.
+- **Kérési idejű információk** - A dinamikus renderelés lehetővé teszi, hogy olyan információkhoz férjen hozzá, amelyek csak a kérés idején ismertek, mint például a cookie-k vagy az URL keresési paraméterei.
+
+**A dinamikus rendereléssel az alkalmazás csak annyira gyors, amennyire a leglassabb adatlehívás.**
+
+Alapértelmezés szerint a `@vercel/postgres` nem állítja be a saját gyorsítótárazási szemantikáját. Ez lehetővé teszi a keretrendszer számára, hogy beállítsa saját statikus és dinamikus viselkedését.
+
+Használhatja a Next.js API-t, az `unstable_noStore`-t a szerverkomponenseken vagy az adatlehívó függvényeken belül, hogy lemondjon a statikus renderelésről.
+
+*Megjegyzés: az `unstable_noStore` egy kísérleti API, és a jövőben változhat. Ha saját projektjeiben inkább a stabil API-t szeretné használni, akkor használhatja a Segment Config Option `export const dynamic = "force-dynamic"`.*
+
