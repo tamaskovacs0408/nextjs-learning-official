@@ -356,3 +356,6 @@ Használhatja a Next.js API-t, az `unstable_noStore`-t a szerverkomponenseken va
 
 *Megjegyzés: az `unstable_noStore` egy kísérleti API, és a jövőben változhat. Ha saját projektjeiben inkább a stabil API-t szeretné használni, akkor használhatja a Segment Config Option `export const dynamic = "force-dynamic"`.*
 
+## Streaming
+
+A streaming egy olyan adatátviteli technika, amely lehetővé teszi, hogy egy útvonalat kisebb "darabokra" bontva fokozatosan streamelje a kiszolgálóról az ügyfélre, amint azok készen állnak.
