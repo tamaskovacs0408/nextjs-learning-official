@@ -359,3 +359,30 @@ Használhatja a Next.js API-t, az `unstable_noStore`-t a szerverkomponenseken va
 ## Streaming
 
 A streaming egy olyan adatátviteli technika, amely lehetővé teszi, hogy egy útvonalat kisebb "darabokra" bontva fokozatosan streamelje a kiszolgálóról az ügyfélre, amint azok készen állnak.
+
+A streaming segítségével megakadályozhatja, hogy a lassú adatkérések blokkolják az egész oldalt. Ez lehetővé teszi a felhasználó számára, hogy az oldal egyes részeit lássa és interakcióba lépjen velük anélkül, hogy az összes adat betöltésére várna, mielőtt bármilyen felhasználói felület megjelenne a felhasználó számára.
+
+A streaminggel az egyes darabkák adatlekérése és renderelése is párhuzamosan indul, megoldva ezzel a `waterfall`-problémát.
+
+A streaming jól működik a React komponensmodelljével, mivel minden komponens egy darabnak tekinthető.
+
+A Next.js-ben kétféleképpen valósítható meg a streaming:
+
+- Az oldal szintjén, a `loading.tsx` fájlban.
+- Konkrét komponensek esetében a `<Suspense>` segítségével.
+
+### loading.tsx fájl
+
+A `loading.tsx` fájlt a `page.tsx` mellé kell létrehozni.
+
+Ez a komponens adja vissza, hogy mit lásson a user, amíg betölt az adat (ha lassú az adatbetöltés), pl *Loading...*, vagy egy laoding spinner.
+
+```tsx
+export default function Loading() {
+  return <div>Loading...</div>
+}
+```
+
+- A `loading.tsx` egy speciális Next.js fájl, amely a `Suspense`-re épül, és lehetővé teszi, hogy az oldal tartalmának betöltése közben helyettesítő felhasználói felületet hozzon létre.
+- Mivel a `<Sidebar>` statikus, azonnal megjelenik. A felhasználó interakcióba léphet a `<Sidebar>`-val, miközben a dinamikus tartalom betöltődik.
+- A felhasználónak nem kell megvárnia az oldal betöltésének befejezését, mielőtt elnavigálna (ezt hívják megszakítható navigációnak).
